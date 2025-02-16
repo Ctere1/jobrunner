@@ -1,4 +1,6 @@
-# ![](https://raw.githubusercontent.com/bamzi/jobrunner/master/views/runclock.jpg) JobRunner
+# ![](./views/runclock.jpg) JobRunner
+
+This is a fork of the [bamzi/jobrunner](https://github.com/bamzi/jobrunner) package.
 
 JobRunner is framework for performing work asynchronously, outside of the request flow. It comes with cron to schedule and queue job functions for processing at specified time. 
 
@@ -6,14 +8,14 @@ It includes a live monitoring of current schedule and state of active jobs that 
 
 ## Install
 
-`go get github.com/bamzi/jobrunner`
+`go get github.com/Ctere1/jobrunner`
 
 ### Setup
 
 ```go
 package main
 
-import "github.com/bamzi/jobrunner"
+import "github.com/Ctere1/jobrunner"
 
 func main() {
     jobrunner.Start() // optional: jobrunner.Start(pool int, concurrent int) (10, 1)
@@ -34,7 +36,7 @@ func (e ReminderEmails) Run() {
 ```
 
 ### Live Monitoring
-![](https://raw.githubusercontent.com/bamzi/jobrunner/master/views/jobrunner-html.png)
+![](https://raw.githubusercontent.com/Ctere1/jobrunner/master/views/jobrunner-html.png)
 ```go
 
 // Example of GIN micro framework
@@ -45,7 +47,7 @@ func main() {
     routes.GET("/jobrunner/json", JobJson)
 
     // Load template file location relative to the current working directory
-    routes.LoadHTMLGlob("../github.com/bamzi/jobrunner/views/Status.html")
+    routes.LoadHTMLGlob("../github.com/Ctere1/jobrunner/views/Status.html")
 
     // Returns html page at given endpoint based on the loaded
     // template from above
@@ -107,7 +109,6 @@ JobRunner is designed to be framework agnostic. So it will work with pure Go app
 * Revel (JobRunner is modified version of revel's Jobs module)
 * ...
 
-**Examples & recipes are coming soon**
 
 ## Basics
 
@@ -120,25 +121,3 @@ JobRunner is designed to be framework agnostic. So it will work with pure Go app
     jobrunner.Now(NowDo{}) // do the job as soon as it's triggered
 ```
 [**More Detailed CRON Specs**](https://github.com/robfig/cron/blob/v2/doc.go)
-
-## Contribute
-
-**Use issues for everything**
-
-- Report problems
-- Discuss before sending pull request
-- Suggest new features
-- Improve/fix documentation
-
-## Credits
-- [revel jobs module](https://github.com/revel/modules/tree/master/jobs) - Origin of JobRunner
-- [robfig cron v3](https://github.com/robfig/cron/tree/v3) - github.com/robfig/cron/v3
-- [contributors](https://github.com/bamzi/jobrunner/graphs/contributors)
-
-### Author 
-**Bam Azizi**
-Github: [@bamzi](https://github.com/bamzi)
-Twitter: [@bamazizi](https://twitter/bamazizi)
-
-#### License
-MIT
