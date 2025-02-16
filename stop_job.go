@@ -7,9 +7,7 @@ func Stop() {
 	go MainCron.Stop()
 }
 
-// Remove a specific job from running
-// Get EntryID from the list job entries jobrunner.Entries()
-// If job is in the middle of running, once the process is finished it will be removed
+// Remove a job from the scheduler by its id
 func Remove(id cron.EntryID) {
 	MainCron.Remove(id)
 }

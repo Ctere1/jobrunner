@@ -7,54 +7,54 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-const DEFAULT_JOB_POOL_SIZE = 10
+const DEFAULT_JOB_POOL_SIZE = 10 // Default number of concurrent jobs
 
 var (
-	// Singleton instance of the underlying job scheduler.
-	MainCron *cron.Cron
-
-	// This limits the number of jobs allowed to run concurrently.
-	workPermits chan struct{}
-
-	// Is a single job allowed to run concurrently with itself?
-	selfConcurrent bool
+	MainCron       *cron.Cron            // Job scheduler singleton instance
+	workPermits    chan struct{}         // Limits the number of concurrent jobs
+	selfConcurrent bool                  // Whether a job can run concurrently with itself
+	HideBanner     bool          = false // Flag to control banner display
 )
 
+// ANSI escape codes for colored terminal output
 var (
-	green   = string([]byte{27, 91, 57, 55, 59, 52, 50, 109})
-	magenta = string([]byte{27, 91, 57, 55, 59, 52, 53, 109})
-	reset   = string([]byte{27, 91, 48, 109})
-
-	functions =[]interface{}{makeWorkPermits,isSelfConcurrent}
+	magenta = "\033[97;45m"
+	reset   = "\033[0m"
 )
 
-func makeWorkPermits(bufferCapacity int) {
-	if bufferCapacity <=0 {
+// initWorkPermits initializes the work permits channel
+func initWorkPermits(bufferCapacity int) {
+	if bufferCapacity <= 0 {
 		workPermits = make(chan struct{}, DEFAULT_JOB_POOL_SIZE)
 	} else {
 		workPermits = make(chan struct{}, bufferCapacity)
 	}
 }
 
-func isSelfConcurrent(cocnurrencyFlag int) {
-	if cocnurrencyFlag <=0 {
-		selfConcurrent = false
-	} else {
-		selfConcurrent = true
+// setSelfConcurrent sets the self-concurrency flag
+func setSelfConcurrent(concurrencyFlag int) {
+	selfConcurrent = concurrencyFlag > 0
+}
+
+func printBanner() {
+	if !HideBanner {
+		fmt.Printf("%s[JobRunner] %v Started... %s \n", magenta, time.Now().Format("2006/01/02 - 15:04:05"), reset)
 	}
 }
 
-func Start(v ...int) {
+// Start initializes and starts the job scheduler
+func Start(options ...int) {
 	MainCron = cron.New()
 
-	for i,option := range v {
-		functions[i].(func(int))(option)
+	// Apply optional configurations
+	if len(options) > 0 {
+		initWorkPermits(options[0])
 	}
-
+	if len(options) > 1 {
+		setSelfConcurrent(options[1])
+	}
 
 	MainCron.Start()
 
-	fmt.Printf("%s[JobRunner] %v Started... %s \n",
-		magenta, time.Now().Format("2006/01/02 - 15:04:05"), reset)
-
+	printBanner()
 }
