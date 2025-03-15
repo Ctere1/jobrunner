@@ -24,12 +24,12 @@ import (
 // - Latency: The time taken for the last execution of the job.
 // - running: A mutex to prevent concurrent execution if self-concurrency is disabled.
 type Job struct {
-	Name    string
-	inner   cron.Job
-	status  uint32
-	Status  string
-	Latency string
-	running sync.Mutex
+	Name    string     `json:"name"`
+	inner   cron.Job   `json:"-"`
+	status  uint32     `json:"-"`
+	Status  string     `json:"status"`
+	Latency string     `json:"latency"`
+	running sync.Mutex `json:"-"`
 }
 
 const (

@@ -7,10 +7,10 @@ import (
 )
 
 type StatusData struct {
-	Id        cron.EntryID
-	JobRunner *Job
-	Next      time.Time
-	Prev      time.Time
+	Id        cron.EntryID `json:"id"`
+	JobRunner *Job         `json:"jobRunner"`
+	Next      time.Time    `json:"next"`
+	Prev      time.Time    `json:"prev"`
 }
 
 // Entries returns a list of all cron job entries
