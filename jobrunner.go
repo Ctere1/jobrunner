@@ -14,22 +14,19 @@ import (
 
 // Job represents a scheduled task within the JobRunner system.
 // It wraps an inner cron.Job and maintains execution metadata such as
-// name, status, and execution latency.
+// name, status, latency, last-run time, and total run count.
 //
-// Fields:
-// - Name: The name of the job.
-// - inner: The actual job implementation that executes.
-// - status: Atomic status flag to indicate if the job is running.
-// - Status: A human-readable representation of the job status ("RUNNING" or "IDLE").
-// - Latency: The time taken for the last execution of the job.
-// - running: A mutex to prevent concurrent execution if self-concurrency is disabled.
+// lastRun and runCount are placed first in the struct to guarantee 64-bit
+// atomic alignment on 32-bit platforms (Go spec requirement).
 type Job struct {
-	Name    string     `json:"name"`
-	inner   cron.Job   `json:"-"`
-	status  uint32     `json:"-"`
-	Status  string     `json:"status"`
-	Latency string     `json:"latency"`
-	running sync.Mutex `json:"-"`
+	lastRun  int64      `json:"-"` // unix nanoseconds of last execution start; 0 = never run; atomic
+	runCount int64      `json:"-"` // total number of executions started; atomic
+	Name     string     `json:"name"`
+	inner    cron.Job   `json:"-"`
+	status   uint32     `json:"-"`
+	Status   string     `json:"status"`
+	Latency  string     `json:"latency"`
+	running  sync.Mutex `json:"-"`
 }
 
 const (
@@ -61,9 +58,27 @@ func (j *Job) StatusUpdate() string {
 	return j.Status
 }
 
-// Run executes the job and updates the job status and latency
+// LastRun returns the time this job last began executing (scheduled or manual).
+// Returns the zero time if the job has never run.
+func (j *Job) LastRun() time.Time {
+	ns := atomic.LoadInt64(&j.lastRun)
+	if ns == 0 {
+		return time.Time{}
+	}
+	return time.Unix(0, ns)
+}
+
+// RunCount returns the total number of times this job has started executing.
+func (j *Job) RunCount() int64 {
+	return atomic.LoadInt64(&j.runCount)
+}
+
+// Run executes the job and updates the job status, latency, last-run time, and run count.
 func (j *Job) Run() {
 	start := time.Now()
+	atomic.StoreInt64(&j.lastRun, start.UnixNano())
+	atomic.AddInt64(&j.runCount, 1)
+
 	// If the job panics, just print a stack trace.
 	// Don't let the whole process die.
 	defer func() {

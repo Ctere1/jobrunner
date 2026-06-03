@@ -1,5 +1,5 @@
 module github.com/Ctere1/jobrunner
 
-go 1.24
+go 1.26
 
 require github.com/robfig/cron/v3 v3.0.1
